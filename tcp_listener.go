@@ -40,6 +40,8 @@ func (this *TcpListener) Listen() {
 }
 
 func (this *TcpListener) Close() {
+	// If more than one connection is closed, than the quit channel will need to be triggered
+	// for each close or the fail-safe switch will will not work after the first pass
 	this.quit <- 0
 	this.conn.Close()
 
