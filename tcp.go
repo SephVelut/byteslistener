@@ -8,7 +8,7 @@ import (
 
 var mu = &sync.Mutex{}
 
-type TcpListener struct {
+type Tcp struct {
 	address  string
 	port     string
 	conn     net.Listener
@@ -17,19 +17,19 @@ type TcpListener struct {
 	handlers []func([]byte)
 }
 
-func (this TcpListener) New(address string, port string) *TcpListener {
-	return &TcpListener{address: address,
+func (this Tcp) New(address string, port string) *Tcp {
+	return &Tcp{address: address,
 		port:     port,
 		conns:    map[int]net.Conn{},
 		quit:     make(chan int, 1),
 		handlers: []func([]byte){}}
 }
 
-func (this *TcpListener) Subscribe(callback func([]byte)) {
+func (this *Tcp) Subscribe(callback func([]byte)) {
 	this.handlers = append(this.handlers, callback)
 }
 
-func (this *TcpListener) Listen() {
+func (this *Tcp) Listen() {
 	if this.conn == nil {
 		var err error
 		this.conn, err = net.Listen("tcp", this.address+":"+this.port)
@@ -39,7 +39,7 @@ func (this *TcpListener) Listen() {
 	}
 }
 
-func (this *TcpListener) Close() {
+func (this *Tcp) Close() {
 	// If more than one connection is closed, than the quit channel will need to be triggered
 	// for each close or the fail-safe switch will will not work after the first pass
 	this.quit <- 0
@@ -52,7 +52,7 @@ func (this *TcpListener) Close() {
 	mu.Unlock()
 }
 
-func (this *TcpListener) handleRequests() {
+func (this *Tcp) handleRequests() {
 	for {
 		request, err := this.conn.Accept()
 		if err != nil {
@@ -79,7 +79,7 @@ func (this *TcpListener) handleRequests() {
 	}
 }
 
-func (this *TcpListener) handleRequest(request net.Conn) {
+func (this *Tcp) handleRequest(request net.Conn) {
 	buf, err := ioutil.ReadAll(request)
 	this.handleError(err)
 
@@ -88,7 +88,7 @@ func (this *TcpListener) handleRequest(request net.Conn) {
 	}
 }
 
-func (this *TcpListener) handleError(err error) {
+func (this *Tcp) handleError(err error) {
 	if err != nil {
 		panic(err)
 	}
