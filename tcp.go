@@ -1,4 +1,4 @@
-package byteslistener
+package listener
 
 import (
 	"io/ioutil"
